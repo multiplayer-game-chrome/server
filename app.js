@@ -23,8 +23,17 @@ let defaultBoard = [
 
 let winner = ''
 
+function getTotalClients() {
+    return io.sockets.clients().server.eio.clientsCount;
+}
+
 io.on('connection', function (socket) {
     console.log(`connected`);
+    let playerId = 0;
+    if(getTotalClients() <= 2) {
+        playerId = getTotalClients();
+    }
+    socket.emit('getPlayerId', { playerId })
 
     socket.on('mark', function (payload) {
         const { x, y, value } = payload
@@ -66,7 +75,7 @@ io.on('connection', function (socket) {
                 winner = 'O'
             }
         }
-        
+
 
         console.log('winner:', winner);
         payload = {
