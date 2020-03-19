@@ -21,16 +21,20 @@ let defaultBoard = [
 	[ 'z', 'z', 'z' ]
 ]
 
+let winner = ''
+
 io.on('connection', function (socket) {
     console.log(`connected`);
+
     socket.on('mark', function (payload) {
         const { x, y, value } = payload
         board[x][y] = value
+        console.log(payload);
+        console.log(board);
 
         // check win logic
         let strDiagLeft = board[0][0] + board[1][1] + board[2][2]
         let strDiagRight = board[0][2] + board[1][1] + board[2][0]
-        let winner = ''
 
         for (let i = 0; i < board.length; i++) {
             let strH = ''
@@ -43,18 +47,28 @@ io.on('connection', function (socket) {
                 strV += board[j][i]
             }
 
-            if (strH === 'xxx' || strV === 'xxx' || strDiagLeft === 'xxx' ||  strDiagRight === 'xxx') {
+            if (strH === 'XXX' || strV === 'XXX') {
                 // display player X is win & display player O is lose
                 winner = 'X'
                 break;
-            } else if (strH === 'ooo' || strV === 'ooo' || strDiagLeft === 'ooo' || strDiagRight === 'ooo') {
+            } else if (strH === 'OOO' || strV === 'OOO') {
                 // display player O is win & display player X is lose
-                console.log(`Player O is the winner!`);
                 winner = 'O'
                 break;
             }
         }
 
+        console.log(strDiagLeft, 'left', strDiagRight, 'right');
+        if (winner === '') {
+            if (strDiagLeft === 'XXX' ||  strDiagRight === 'XXX') {
+                winner = 'X'
+            } else if (strDiagLeft === 'OOO' ||  strDiagRight === 'OOO') {
+                winner = 'O'
+            }
+        }
+        
+
+        console.log('winner:', winner);
         payload = {
             board,
             winner
@@ -63,6 +77,14 @@ io.on('connection', function (socket) {
         io.emit('update-board', payload)
     })
 
+    socket.on('get-board-state', function () {
+        payload = {
+            board,
+            winner
+        }
+
+        io.emit('update-board', payload)
+    })
     socket.on('reset-board', function () {
         io.emit('update-board', defaultBoard)
     })
