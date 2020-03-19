@@ -1,25 +1,28 @@
 if (process.env.NODE_ENV == "development") {
     require('dotenv').config();
 }
-
+const cors = require('cors');
 const app = require('express')();
+app.use(cors());
+
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 const PORT = process.env.PORT || 3211;
 
 let board = [
-	[ '', '', '' ],
-	[ '', '', '' ],
-	[ '', '', '' ]
+	[ 'z', 'z', 'z' ],
+	[ 'z', 'z', 'z' ],
+	[ 'z', 'z', 'z' ]
 ]
 
 let defaultBoard = [
-	[ '', '', '' ],
-	[ '', '', '' ],
-	[ '', '', '' ]
+	[ 'z', 'z', 'z' ],
+	[ 'z', 'z', 'z' ],
+	[ 'z', 'z', 'z' ]
 ]
 
 io.on('connection', function (socket) {
+    console.log(`connected`);
     socket.on('mark', function (payload) {
         const { x, y, value } = payload
         board[x][y] = value
@@ -42,7 +45,6 @@ io.on('connection', function (socket) {
 
             if (strH === 'xxx' || strV === 'xxx' || strDiagLeft === 'xxx' ||  strDiagRight === 'xxx') {
                 // display player X is win & display player O is lose
-                // console.log(`Player X is the winner!`);
                 winner = 'X'
                 break;
             } else if (strH === 'ooo' || strV === 'ooo' || strDiagLeft === 'ooo' || strDiagRight === 'ooo') {
@@ -53,7 +55,7 @@ io.on('connection', function (socket) {
             }
         }
 
-        let payload = {
+        payload = {
             board,
             winner
         }
@@ -65,7 +67,6 @@ io.on('connection', function (socket) {
         io.emit('update-board', defaultBoard)
     })
 
-    // console.log('a user connected');
     socket.on('disconnect', function(){
         console.log('user disconnected');
     });
