@@ -21,23 +21,24 @@ let defaultBoard = [
 	[ 'z', 'z', 'z' ]
 ]
 
+let winner = ''
+let playerId = 0;
+
 function getTotalClients() {
     return io.sockets.clients().server.eio.clientsCount;
 }
 
 io.on('connection', function (socket) {
     console.log(`connected`);
-    let playerId = 0;
+    
     if(getTotalClients() <= 2) {
         playerId = getTotalClients();
     }
-    socket.emit('getPlayerId', { playerId })
+    socket.emit('setPlayerId', { playerId })
 
     socket.on('mark', function (payload) {
         const { x, y, value } = payload
         board[x][y] = value
-        console.log(payload);
-        console.log(board);
 
         // check win logic
         let strDiagLeft = board[0][0] + board[1][1] + board[2][2]
@@ -56,11 +57,11 @@ io.on('connection', function (socket) {
 
             if (strH === 'XXX' || strV === 'XXX') {
                 // display player X is win & display player O is lose
-                winner = 'X'
+                winner = '1'
                 break;
             } else if (strH === 'OOO' || strV === 'OOO') {
                 // display player O is win & display player X is lose
-                winner = 'O'
+                winner = '2'
                 break;
             }
         }
@@ -68,12 +69,11 @@ io.on('connection', function (socket) {
         console.log(strDiagLeft, 'left', strDiagRight, 'right');
         if (winner === '') {
             if (strDiagLeft === 'XXX' ||  strDiagRight === 'XXX') {
-                winner = 'X'
+                winner = '1'
             } else if (strDiagLeft === 'OOO' ||  strDiagRight === 'OOO') {
-                winner = 'O'
+                winner = '2'
             }
         }
-        
 
         console.log('winner:', winner);
         payload = {
@@ -92,7 +92,12 @@ io.on('connection', function (socket) {
 
         io.emit('update-board', payload)
     })
+
     socket.on('reset-board', function () {
+        payload = {
+            board: defaultBoard,
+            winner
+        }
         io.emit('update-board', defaultBoard)
     })
 
@@ -100,7 +105,6 @@ io.on('connection', function (socket) {
         console.log('user disconnected');
     });
 });
-
 
 http.listen(PORT, function () {
     console.log('listening on PORT: ', PORT);
