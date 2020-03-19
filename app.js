@@ -21,8 +21,22 @@ let defaultBoard = [
 	[ 'z', 'z', 'z' ]
 ]
 
+function getTotalClients() {
+    return io.sockets.clients().server.eio.clientsCount;
+}
+
 io.on('connection', function (socket) {
     console.log(`connected`);
+    // console.log(io.sockets.clients().server.eio.clientsCount);
+    // console.log(getTotalClients());
+    // console.log("<<<<<<<<<<<<<<<<<<<<<<");
+
+    let playerId = 0;
+    if(getTotalClients() <= 2) {
+        playerId = getTotalClients();
+    }
+    socket.emit('getPlayerId', { playerId })
+
     socket.on('mark', function (payload) {
         const { x, y, value } = payload
         board[x][y] = value
