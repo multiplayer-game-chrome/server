@@ -23,6 +23,7 @@ let defaultBoard = [
 
 let winner = ''
 let playerId = 0;
+let isActive = false;
 
 function getTotalClients() {
     return io.sockets.clients().server.eio.clientsCount;
@@ -33,8 +34,14 @@ io.on('connection', function (socket) {
     
     if(getTotalClients() <= 2) {
         playerId = getTotalClients();
+        if(playerId == 1) {
+            isActive = true;
+        } else {
+            isActive = false;
+        }
     }
-    socket.emit('setPlayerId', { playerId })
+    console.log(playerId, isActive);
+    socket.emit('setPlayerId', { playerId, isActive })
 
     socket.on('mark', function (payload) {
         const { x, y, value } = payload
@@ -81,6 +88,8 @@ io.on('connection', function (socket) {
             winner
         }
 
+        socket.emit('set-is-active', {  isActive: false })
+        socket.broadcast.emit('set-is-active', {  isActive: true })
         io.emit('update-board', payload)
     })
 
