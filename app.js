@@ -21,17 +21,20 @@ let defaultBoard = [
 	[ 'z', 'z', 'z' ]
 ]
 
+let winner = ''
+let playerId = 0;
+
 function getTotalClients() {
     return io.sockets.clients().server.eio.clientsCount;
 }
 
 io.on('connection', function (socket) {
     console.log(`connected`);
-    let playerId = 0;
+    
     if(getTotalClients() <= 2) {
         playerId = getTotalClients();
     }
-    socket.emit('getPlayerId', { playerId })
+    socket.emit('setPlayerId', { playerId })
 
     socket.on('mark', function (payload) {
         const { x, y, value } = payload
@@ -40,7 +43,6 @@ io.on('connection', function (socket) {
         // check win logic
         let strDiagLeft = board[0][0] + board[1][1] + board[2][2]
         let strDiagRight = board[0][2] + board[1][1] + board[2][0]
-        let winner = ''
 
         for (let i = 0; i < board.length; i++) {
             let strH = ''
@@ -53,18 +55,36 @@ io.on('connection', function (socket) {
                 strV += board[j][i]
             }
 
-            if (strH === 'xxx' || strV === 'xxx' || strDiagLeft === 'xxx' ||  strDiagRight === 'xxx') {
+            if (strH === 'XXX' || strV === 'XXX') {
                 // display player X is win & display player O is lose
-                winner = 'X'
+                winner = '1'
                 break;
-            } else if (strH === 'ooo' || strV === 'ooo' || strDiagLeft === 'ooo' || strDiagRight === 'ooo') {
+            } else if (strH === 'OOO' || strV === 'OOO') {
                 // display player O is win & display player X is lose
-                console.log(`Player O is the winner!`);
-                winner = 'O'
+                winner = '2'
                 break;
             }
         }
 
+        console.log(strDiagLeft, 'left', strDiagRight, 'right');
+        if (winner === '') {
+            if (strDiagLeft === 'XXX' ||  strDiagRight === 'XXX') {
+                winner = '1'
+            } else if (strDiagLeft === 'OOO' ||  strDiagRight === 'OOO') {
+                winner = '2'
+            }
+        }
+
+        console.log('winner:', winner);
+        payload = {
+            board,
+            winner
+        }
+
+        io.emit('update-board', payload)
+    })
+
+    socket.on('get-board-state', function () {
         payload = {
             board,
             winner
@@ -74,6 +94,10 @@ io.on('connection', function (socket) {
     })
 
     socket.on('reset-board', function () {
+        payload = {
+            board: defaultBoard,
+            winner
+        }
         io.emit('update-board', defaultBoard)
     })
 
@@ -81,7 +105,6 @@ io.on('connection', function (socket) {
         console.log('user disconnected');
     });
 });
-
 
 http.listen(PORT, function () {
     console.log('listening on PORT: ', PORT);
