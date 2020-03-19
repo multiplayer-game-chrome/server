@@ -27,10 +27,6 @@ function getTotalClients() {
 
 io.on('connection', function (socket) {
     console.log(`connected`);
-    // console.log(io.sockets.clients().server.eio.clientsCount);
-    // console.log(getTotalClients());
-    // console.log("<<<<<<<<<<<<<<<<<<<<<<");
-
     let playerId = 0;
     if(getTotalClients() <= 2) {
         playerId = getTotalClients();
