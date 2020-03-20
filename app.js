@@ -120,6 +120,10 @@ io.on('connection', function (socket) {
     });
 });
 
+app.get("/", (req, res) => {
+    res.send('Welcome to TTT')
+})
+
 http.listen(PORT, function () {
     console.log('listening on PORT:', PORT);
 });
