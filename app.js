@@ -103,13 +103,14 @@ io.on('connection', function (socket) {
     })
 
     socket.on('reset-board', function () {
+        console.log(`client ${socket.id} ask for reset!`);
         board = defaultBoard.slice()
         winner = ''
         payload = {
             board,
             winner
         }
-        io.emit('update-board', defaultBoard)
+        io.emit('update-board', payload)
     })
 
     socket.on('disconnect', function(){
@@ -118,5 +119,5 @@ io.on('connection', function (socket) {
 });
 
 http.listen(PORT, function () {
-    console.log('listening on PORT: ', PORT);
+    console.log('listening on PORT:', PORT);
 });
