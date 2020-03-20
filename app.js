@@ -39,6 +39,8 @@ io.on('connection', function (socket) {
         } else {
             isActive = false;
         }
+    } else {
+        playerId = 0;
     }
     console.log(playerId, isActive);
     socket.emit('setPlayerId', { playerId, isActive })
