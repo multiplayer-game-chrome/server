@@ -94,8 +94,10 @@ io.on('connection', function (socket) {
     })
 
     socket.on('reset-board', function () {
+        board = defaultBoard.slice()
+        winner = ''
         payload = {
-            board: defaultBoard,
+            board,
             winner
         }
         io.emit('update-board', defaultBoard)
